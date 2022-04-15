@@ -1,3 +1,6 @@
+To run the app, get inside the project dir & type the following command in cli:
+`npm start`
+
 ## Snapping feature implementation for FABRIC JS
 
 ```
