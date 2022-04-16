@@ -57,14 +57,26 @@ export default function App() {
   }
 
   const checkMatch = (flatArr, options) => {
-    if(flatArr.includes(options.target.getCenterPoint().x)) {
-      // Full Y Line Flash
-      console.log('Full Y Line Flash')
-    }
-    if(flatArr.includes(options.target.getCenterPoint().y)) {
-      // Full X Line Flash
-      console.log('Full X Line Flash')
-    }
+    flatArr.forEach(element => {
+      if(Math.floor(element) > Math.floor(options.target.getCenterPoint().y)
+      && Math.floor(element) - Math.floor(options.target.getCenterPoint().y) < 10
+      || Math.floor(element) < Math.floor(options.target.getCenterPoint().y)
+      && Math.floor(options.target.getCenterPoint().y) - Math.floor(element) < 10) {
+        options.target.set({
+          top: element - options.target.height/2,
+       }).setCoords()
+      }
+
+      if(Math.floor(element) > Math.floor(options.target.getCenterPoint().x)
+      && Math.floor(element) - Math.floor(options.target.getCenterPoint().x) < 10
+      || Math.floor(element) < Math.floor(options.target.getCenterPoint().x)
+      && Math.floor(options.target.getCenterPoint().x) - Math.floor(element) < 10) {
+        options.target.set({
+          left: element - options.target.width/2,
+       }).setCoords()
+      }
+    });
+    
   }
 
   useEffect(_ => {
@@ -73,8 +85,8 @@ export default function App() {
     let totalGridWidth = 800 //window.innerWidth
     let canvas = new fabric.Canvas('area52', {selection: false})
 
-    drawGrid(canvas, grid, totalGridWidth)
-    snapToGrid(canvas, grid)
+    // drawGrid(canvas, grid, totalGridWidth)
+    // snapToGrid(canvas, grid)
        
     Promise.all([
       addRectangle(canvas, '#D7A9E3FF'),
