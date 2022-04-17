@@ -5,18 +5,11 @@ import { useEffect, useRef, useState } from 'react'
 export default function App() {
 
   const [pos, setPos] = useState({})
-  // const [flatpos, setFlatpos] = useState([])
-
   const posRef = useRef(pos)
-  // const flatposRef = useRef(flatpos)
 
   useEffect(_ => {
     posRef.current = pos
   }, [pos])
-
-  // useEffect(_ => {
-  //   flatposRef.current = flatpos
-  // }, [flatpos])
 
   const createFlatPos = (pos, target) => {
     let arr = []
@@ -167,33 +160,6 @@ export default function App() {
   )
 }
 
-function drawGrid(canvas, grid, totalGridWidth) {
-  for (var i = 0; i < (totalGridWidth / grid); i++) {
-    //vertical lines
-    canvas.add(new fabric.Line([i * grid, 0, i * grid, totalGridWidth], {
-      stroke:     '#FCF6F5FF',
-      selectable: false
-    }))
-    // horizontal lines
-    canvas.add(new fabric.Line([0, i * grid, totalGridWidth, i * grid], {
-      stroke:     '#FCF6F5FF',
-      selectable: false
-    }))
-  }
-}
-
-function snapToGrid(canvas, grid) {
-    canvas.on('object:moving', (options) => {
-      if (Math.round(options.target.left / grid * 2) % 2 == 0 
-      &&  Math.round(options.target.top / grid * 2) % 2 == 0) {
-        options.target.set({
-          left: Math.round(options.target.left / grid) * grid,
-          top:  Math.round(options.target.top / grid) * grid
-        }).setCoords()
-      }
-    })
-}
-
 function addRectangle(canvas, color) {
   let name = 'Rectangle-' + Math.floor(1000 + Math.random() * 9000)
   let object = new fabric.Rect({
@@ -223,4 +189,31 @@ function addCircle(canvas, color) {
   })
   canvas.add(object)
   return object;
+}
+
+function drawGrid(canvas, grid, totalGridWidth) {
+  for (var i = 0; i < (totalGridWidth / grid); i++) {
+    //vertical lines
+    canvas.add(new fabric.Line([i * grid, 0, i * grid, totalGridWidth], {
+      stroke:     '#FCF6F5FF',
+      selectable: false
+    }))
+    // horizontal lines
+    canvas.add(new fabric.Line([0, i * grid, totalGridWidth, i * grid], {
+      stroke:     '#FCF6F5FF',
+      selectable: false
+    }))
+  }
+}
+
+function snapToGrid(canvas, grid) {
+    canvas.on('object:moving', (options) => {
+      if (Math.round(options.target.left / grid * 2) % 2 == 0 
+      &&  Math.round(options.target.top / grid * 2) % 2 == 0) {
+        options.target.set({
+          left: Math.round(options.target.left / grid) * grid,
+          top:  Math.round(options.target.top / grid) * grid
+        }).setCoords()
+      }
+    })
 }
