@@ -84,13 +84,17 @@ export default function App() {
       for(let i in lineObjects) {
         canvas.remove(lineObjects[i])
       }
-    }, 5000);
+    }, 1000);
   }
 
   const checkMatch = (flatArr, options, canvas) => {
     flatArr.forEach(element => { 
-      if(Math.round(element.y) == Math.round(options.target.getCenterPoint().y)) {
-        console.log('FULL X LINE');
+      if(((Math.round(element.y) > Math.round(options.target.getCenterPoint().y)) 
+      &&  (Math.round(element.y) - Math.round(options.target.getCenterPoint().y) < 10))
+      || ((Math.round(element.y) < Math.round(options.target.getCenterPoint().y)) 
+      &&  (Math.round(options.target.getCenterPoint().y) - Math.round(element.y) < 10))  
+      ){
+        // console.log('FULL X LINE');
         flashGuideLine(canvas,element,'y')
         // console.log(`
         //   CalculatedTop: ${(element.y - (((options.target.getCenterPoint().y - options.target.top)*2) / 2))}
@@ -103,16 +107,20 @@ export default function App() {
           top:  (element.y - (((options.target.getCenterPoint().y - options.target.top)*2) / 2))
         }).setCoords()
       }
-      if(Math.round(element.x) == Math.round(options.target.getCenterPoint().x)) {
-        console.log('FULL Y LINE');
+      if(((Math.round(element.x) > Math.round(options.target.getCenterPoint().x)) 
+      &&  (Math.round(element.x) - Math.round(options.target.getCenterPoint().x) < 10))
+      || ((Math.round(element.x) < Math.round(options.target.getCenterPoint().x)) 
+      &&  (Math.round(options.target.getCenterPoint().x) - Math.round(element.x) < 10))  
+      ){
+        // console.log('FULL Y LINE');
         flashGuideLine(canvas,element,'x')
-        console.log(`
-          CalculatedLeft: ${(element.x - (((options.target.getCenterPoint().x - options.target.left)*2) / 2))}
-          Left: ${options.target.left}
-          Calculated width: ${((options.target.getCenterPoint().x - options.target.left)*2)}
-          Target Center x : ${options.target.getCenterPoint().x}
-          cx: ${element.x}
-        `)
+        // console.log(`
+        //   CalculatedLeft: ${(element.x - (((options.target.getCenterPoint().x - options.target.left)*2) / 2))}
+        //   Left: ${options.target.left}
+        //   Calculated width: ${((options.target.getCenterPoint().x - options.target.left)*2)}
+        //   Target Center x : ${options.target.getCenterPoint().x}
+        //   cx: ${element.x}
+        // `)
         options.target.set({
           left:  (element.x - (((options.target.getCenterPoint().x - options.target.left)*2) / 2))
         }).setCoords()
