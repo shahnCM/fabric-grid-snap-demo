@@ -5,25 +5,29 @@ import { useEffect, useRef, useState } from 'react'
 export default function App() {
 
   const [pos, setPos] = useState({})
-  const [flatpos, setFlatpos] = useState([])
+  // const [flatpos, setFlatpos] = useState([])
 
   const posRef = useRef(pos)
-  const flatposRef = useRef(flatpos)
+  // const flatposRef = useRef(flatpos)
 
   useEffect(_ => {
     posRef.current = pos
   }, [pos])
 
-  useEffect(_ => {
-    flatposRef.current = flatpos
-  }, [flatpos])
+  // useEffect(_ => {
+  //   flatposRef.current = flatpos
+  // }, [flatpos])
 
   const createFlatPos = (pos, target) => {
     let arr = []
     Object.keys(pos).map((key, value) => {
       if(target.name != key) { 
-        arr.push(pos[key].x)
-        arr.push(pos[key].y) 
+        arr.push({
+          x: pos[key].x,
+          y: pos[key].y,
+          t: pos[key].t,
+          l: pos[key].l
+        })
       }
     })
     arr = [...new Set(arr)]
@@ -34,55 +38,73 @@ export default function App() {
     const obj = {
       [obj1.name] : {
         x: obj1.getCenterPoint().x,
-        y: obj1.getCenterPoint().y
+        y: obj1.getCenterPoint().y,
+        t: obj1.top,
+        l: obj1.left,
       },
       [obj2.name] : {
         x: obj2.getCenterPoint().x,
-        y: obj2.getCenterPoint().y
+        y: obj2.getCenterPoint().y,
+        t: obj1.top,
+        l: obj1.left,
       },
       [obj3.name] : {
         x: obj3.getCenterPoint().x,
-        y: obj3.getCenterPoint().y
+        y: obj3.getCenterPoint().y,
+        t: obj1.top,
+        l: obj1.left,
       }
     }
-
     setPos(obj)
   }
 
   const updateObjectPos = (options) => {
     setPos({...posRef.current, [options.target.name]: {
       x: options.target.getCenterPoint().x,
-      y: options.target.getCenterPoint().y
+      y: options.target.getCenterPoint().y,
+      t: options.target.top,
+      l: options.target.left,
     }})
   }
 
-  const checkMatch = (flatArr, options) => {
-    flatArr.forEach(element => {
-      if(Math.floor(element) > Math.floor(options.target.getCenterPoint().y)
-      && Math.floor(element) - Math.floor(options.target.getCenterPoint().y) < 10
-      || Math.floor(element) < Math.floor(options.target.getCenterPoint().y)
-      && Math.floor(options.target.getCenterPoint().y) - Math.floor(element) < 10) {
-        options.target.set({
-          top: element - options.target.height/2,
-       }).setCoords()
-      }
-
-      if(Math.floor(element) > Math.floor(options.target.getCenterPoint().x)
-      && Math.floor(element) - Math.floor(options.target.getCenterPoint().x) < 10
-      || Math.floor(element) < Math.floor(options.target.getCenterPoint().x)
-      && Math.floor(options.target.getCenterPoint().x) - Math.floor(element) < 10) {
-        options.target.set({
-          left: element - options.target.width/2,
-       }).setCoords()
-      }
-    });
+  const flashGuideLine = (canvas, element,direction) => {
+    let line
+    if (direction === 'y') {
+      line = canvas.add(new fabric.Line([50, element[direction], window.innerWidth -50, element[direction]], {
+        stroke:     'black',
+        selectable: false
+      }))
+    } else if(direction === 'x') {
+      line = canvas.add(new fabric.Line([element[direction], 50, element[direction], window.innerHeight -50], {
+        stroke:     'black',
+        selectable: false
+      }))
+    }
     
+    setTimeout(() => {
+      let lineObjects = canvas.getObjects('line')
+      for(let i in lineObjects) {
+        canvas.remove(lineObjects[i])
+      }
+    }, 5000);
+  }
+
+  const checkMatch = (flatArr, options, canvas) => {
+    flatArr.forEach(element => { 
+      if(Math.round(element.y) == Math.round(options.target.getCenterPoint().y)) {
+        console.log('FULL X LINE');
+        flashGuideLine(canvas,element,'y')
+      }
+      if(Math.round(element.x) == Math.round(options.target.getCenterPoint().x)) {
+        console.log('FULL Y LINE');
+        flashGuideLine(canvas,element,'x')
+      }
+    }); 
   }
 
   useEffect(_ => {
-
-    let grid = 25
-    let totalGridWidth = 800 //window.innerWidth
+    // let grid = 25
+    // let totalGridWidth = 800 //window.innerWidth
     let canvas = new fabric.Canvas('area52', {selection: false})
 
     // drawGrid(canvas, grid, totalGridWidth)
@@ -99,7 +121,7 @@ export default function App() {
     // On Move
     canvas.on('object:moving', options => {
       let flatArr = createFlatPos(posRef.current, options.target)
-      checkMatch(flatArr, options)
+      checkMatch(flatArr, options, canvas)
       updateObjectPos(options)
     })
 
@@ -113,8 +135,8 @@ export default function App() {
 
   return (
     <div className="App">
-      <canvas id="area52" width="800" height="800"></canvas>
-      {JSON.stringify(pos, null, 2)}
+      <canvas id="area52" width={window.innerWidth -5} height={window.innerHeight -5}></canvas>
+      {/* {JSON.stringify(pos, null, 2)} */}
     </div>
   )
 }
@@ -152,8 +174,8 @@ function addRectangle(canvas, color) {
     name:     name,
     left:     100,
     top:      100,
-    width:    50,
-    height:   50,
+    width:    100,
+    height:   100,
     fill:     color, //'#D7A9E3FF',
     originX:  'left',
     originY:  'top',
