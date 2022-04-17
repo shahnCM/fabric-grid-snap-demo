@@ -45,14 +45,14 @@ export default function App() {
       [obj2.name] : {
         x: obj2.getCenterPoint().x,
         y: obj2.getCenterPoint().y,
-        t: obj1.top,
-        l: obj1.left,
+        t: obj2.top,
+        l: obj2.left,
       },
       [obj3.name] : {
         x: obj3.getCenterPoint().x,
         y: obj3.getCenterPoint().y,
-        t: obj1.top,
-        l: obj1.left,
+        t: obj3.top,
+        l: obj3.left
       }
     }
     setPos(obj)
@@ -69,16 +69,14 @@ export default function App() {
 
   const flashGuideLine = (canvas, element,direction) => {
     let line
+    let lineProperty = {
+      stroke: 'black',
+      selectable: false
+    }
     if (direction === 'y') {
-      line = canvas.add(new fabric.Line([50, element[direction], window.innerWidth -50, element[direction]], {
-        stroke:     'black',
-        selectable: false
-      }))
+      line = canvas.add(new fabric.Line([50, element[direction], window.innerWidth -50, element[direction]], lineProperty))
     } else if(direction === 'x') {
-      line = canvas.add(new fabric.Line([element[direction], 50, element[direction], window.innerHeight -50], {
-        stroke:     'black',
-        selectable: false
-      }))
+      line = canvas.add(new fabric.Line([element[direction], 50, element[direction], window.innerHeight -50], lineProperty))
     }
     
     setTimeout(() => {
@@ -94,10 +92,30 @@ export default function App() {
       if(Math.round(element.y) == Math.round(options.target.getCenterPoint().y)) {
         console.log('FULL X LINE');
         flashGuideLine(canvas,element,'y')
+        // console.log(`
+        //   CalculatedTop: ${(element.y - (((options.target.getCenterPoint().y - options.target.top)*2) / 2))}
+        //   Top: ${options.target.top}
+        //   Calculated Height: ${((options.target.getCenterPoint().y - options.target.top)*2)}
+        //   Target Center y : ${options.target.getCenterPoint().y}
+        //   cy: ${element.y}
+        // `)
+        options.target.set({
+          top:  (element.y - (((options.target.getCenterPoint().y - options.target.top)*2) / 2))
+        }).setCoords()
       }
       if(Math.round(element.x) == Math.round(options.target.getCenterPoint().x)) {
         console.log('FULL Y LINE');
         flashGuideLine(canvas,element,'x')
+        console.log(`
+          CalculatedLeft: ${(element.x - (((options.target.getCenterPoint().x - options.target.left)*2) / 2))}
+          Left: ${options.target.left}
+          Calculated width: ${((options.target.getCenterPoint().x - options.target.left)*2)}
+          Target Center x : ${options.target.getCenterPoint().x}
+          cx: ${element.x}
+        `)
+        options.target.set({
+          left:  (element.x - (((options.target.getCenterPoint().x - options.target.left)*2) / 2))
+        }).setCoords()
       }
     }); 
   }
@@ -127,7 +145,7 @@ export default function App() {
 
     canvas.on('object:scaling', options => {
       let flatArr = createFlatPos(posRef.current, options.target)
-      checkMatch(flatArr, options)
+      checkMatch(flatArr, options, canvas)
       updateObjectPos(options)
     })
 
