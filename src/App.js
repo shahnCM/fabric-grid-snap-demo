@@ -18,18 +18,24 @@ export default function App() {
         y: obj1.getCenterPoint().y,
         t: obj1.top,
         l: obj1.left,
+        b: obj1.top  + (obj1.getCenterPoint().y - obj1.top) * 2,
+        r: obj1.left + (obj1.getCenterPoint().x - obj1.left) * 2
       },
       [obj2.name] : {
         x: obj2.getCenterPoint().x,
         y: obj2.getCenterPoint().y,
         t: obj2.top,
         l: obj2.left,
+        b: obj2.top  + (obj2.getCenterPoint().y - obj2.top) * 2,
+        r: obj2.left + (obj2.getCenterPoint().x - obj2.left) * 2
       },
       [obj3.name] : {
         x: obj3.getCenterPoint().x,
         y: obj3.getCenterPoint().y,
         t: obj3.top,
-        l: obj3.left
+        l: obj3.left,
+        b: obj3.top  + (obj3.getCenterPoint().y - obj3.top) * 2,
+        r: obj3.left + (obj3.getCenterPoint().x - obj3.left) * 2
       }
     })
   }
@@ -40,6 +46,8 @@ export default function App() {
       y: options.target.getCenterPoint().y,
       t: options.target.top,
       l: options.target.left,
+      b: options.target.top  + (options.target.getCenterPoint().y - options.target.top) * 2,
+      r: options.target.left + (options.target.getCenterPoint().x - options.target.left) * 2
     }})
   }
 
@@ -68,7 +76,7 @@ export default function App() {
     // On Scale
     canvas.on('object:scaling', options => {
       let flatArr = createFlatPos(posRef.current, options.target)
-      checkCoordinations(flatArr, options, canvas)
+      // checkCoordinations(flatArr, options, canvas)
       updateObjectPos(options)
     })
 
@@ -87,9 +95,20 @@ function flashGuideLine (canvas, element, direction) {
     stroke: 'black',
     selectable: false
   }
+  // Y: canvas.add(new fabric.Line([50, element[direction], window.innerWidth -50, element[direction]], lineProperty))
+  // X: canvas.add(new fabric.Line([element[direction], 50, element[direction], window.innerHeight -50], lineProperty))
+
   if (direction === 'y') {
     canvas.add(new fabric.Line([50, element[direction], window.innerWidth -50, element[direction]], lineProperty))
   } else if(direction === 'x') {
+    canvas.add(new fabric.Line([element[direction], 50, element[direction], window.innerHeight -50], lineProperty))
+  } else if(direction === 't') {
+    canvas.add(new fabric.Line([50, element[direction], window.innerWidth -50, element[direction]], lineProperty))
+  } else if(direction === 'l') {
+    canvas.add(new fabric.Line([element[direction], 50, element[direction], window.innerHeight -50], lineProperty))
+  } else if(direction === 'b') {
+    canvas.add(new fabric.Line([50, element[direction], window.innerWidth -50, element[direction]], lineProperty))
+  } else if(direction === 'r') {
     canvas.add(new fabric.Line([element[direction], 50, element[direction], window.innerHeight -50], lineProperty))
   }
   
@@ -101,20 +120,41 @@ function flashGuideLine (canvas, element, direction) {
   }, 1000);
 }
 
-function verticalSnap(options, element) {
+function verticalSnap(options, element, pick=null) {
+  let top;
+
+  if(pick === null) {
+    top = (element.y - (((options.target.getCenterPoint().y - options.target.top)*2) / 2))  
+  } else if(pick === 't') {
+    top = element.t
+  } else if(pick === 'b') {
+    top = element.b - ((options.target.getCenterPoint().y - options.target.top) * 2)
+  }
+
   options.target.set({
-    top:  (element.y - (((options.target.getCenterPoint().y - options.target.top)*2) / 2))
+    top: top  
   }).setCoords()
 }
 
-function horizontalSnap(options, element) {
+function horizontalSnap(options, element, pick = null) {
+  let left;
+
+  if(pick === null) {
+    left = (element.x - (((options.target.getCenterPoint().x - options.target.left)*2) / 2))  
+  } else if(pick === 'l') {
+    left = element.l
+  } else if(pick === 'r') {
+    left = element.r - ((options.target.getCenterPoint().x - options.target.left) * 2)
+  }
+
   options.target.set({
-    left:  (element.x - (((options.target.getCenterPoint().x - options.target.left)*2) / 2))
+    left: left
   }).setCoords()
 }
 
 function checkCoordinations (flatArr, options, canvas) {
   flatArr.forEach(element => { 
+    // Centre, Centre
     if(((Math.round(element.y) > Math.round(options.target.getCenterPoint().y)) 
     &&  (Math.round(element.y) - Math.round(options.target.getCenterPoint().y) < 10))
     || ((Math.round(element.y) < Math.round(options.target.getCenterPoint().y)) 
@@ -131,6 +171,42 @@ function checkCoordinations (flatArr, options, canvas) {
       flashGuideLine(canvas, element, 'x') // FULL Y LINE
       horizontalSnap(options, element)
     }
+
+    // Top, Left
+    if(((Math.round(element.t) > Math.round(options.target.top)) 
+    &&  (Math.round(element.t) - Math.round(options.target.top) < 10))
+    || ((Math.round(element.t) < Math.round(options.target.top)) 
+    &&  (Math.round(options.target.top) - Math.round(element.t) < 10))  
+    ){
+      flashGuideLine(canvas, element, 't') // FULL X LINE
+      verticalSnap(options, element, 't')
+    }
+    if(((Math.round(element.l) > Math.round(options.target.left)) 
+    &&  (Math.round(element.l) - Math.round(options.target.left) < 10))
+    || ((Math.round(element.l) < Math.round(options.target.left)) 
+    &&  (Math.round(options.target.left) - Math.round(element.l) < 10))  
+    ){
+      flashGuideLine(canvas, element, 'l') // FULL Y LINE
+      horizontalSnap(options, element, 'l')
+    }
+
+    // Bottom, Right
+    if(((Math.round(element.b) > Math.round(options.target.top + (options.target.getCenterPoint().y - options.target.top) * 2)) 
+    &&  (Math.round(element.b) - Math.round(options.target.top + (options.target.getCenterPoint().y - options.target.top) * 2) < 10))
+    || ((Math.round(element.b) < Math.round(options.target.top + (options.target.getCenterPoint().y - options.target.top) * 2)) 
+    &&  (Math.round(options.target.top + (options.target.getCenterPoint().y - options.target.top) * 2) - Math.round(element.b) < 10))  
+    ){
+      flashGuideLine(canvas, element, 'b') // FULL X LINE
+      verticalSnap(options, element, 'b')
+    }
+    if(((Math.round(element.r) > Math.round(options.target.left + (options.target.getCenterPoint().x - options.target.left) * 2)) 
+    &&  (Math.round(element.r) - Math.round(options.target.left + (options.target.getCenterPoint().x - options.target.left) * 2) < 10))
+    || ((Math.round(element.r) < Math.round(options.target.left + (options.target.getCenterPoint().x - options.target.left) * 2)) 
+    &&  (Math.round(options.target.left + (options.target.getCenterPoint().x - options.target.left) * 2) - Math.round(element.r) < 10))  
+    ){
+      flashGuideLine(canvas, element, 'r') // FULL Y LINE
+      horizontalSnap(options, element, 'r')
+    }
   }); 
 }
 
@@ -142,7 +218,9 @@ function createFlatPos(pos, target) {
         x: pos[key].x,
         y: pos[key].y,
         t: pos[key].t,
-        l: pos[key].l
+        l: pos[key].l,
+        b: pos[key].b,
+        r: pos[key].r
       })
     }
   })
